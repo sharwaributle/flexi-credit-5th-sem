@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %} · Ledger SaaS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Modern Web App Sidebar */
+    .app-sidebar {
+      width: 250px;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px 16px;
+      position: fixed;
+      height: 100vh;
+      left: 0;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px 28px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .brand-logo .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: #0284c7;
+      color: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+
+    .brand-logo span {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-list {
+      list-style: none;
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.92rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+      background: #f8fafc;
+      color: #0284c7;
+    }
+
+    .nav-link.active {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+    }
+
+    .sidebar-user-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    /* Main App Area */
+    .app-main {
+      margin-left: 250px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* Top Navbar */
+    .app-topbar {
+      height: 70px;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 36px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .search-input {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 0.88rem;
+      width: 260px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #0284c7;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Content Area */
+    .app-content {
+      padding: 30px 36px;
+      max-width: 1440px;
+      width: 100%;
+    }
+
+    .flash-msg {
+      padding: 12px 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .flash-msg.error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .flash-msg.success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  </style>
+</head>
+<body>
+
+  <!-- Left Modern Sidebar -->
+  <aside class="app-sidebar">
+    <div>
+      <div class="brand-logo">
+        <div class="logo-icon">§</div>
+        <span>Ledger SaaS</span>
+      </div>
+
+      <ul class="nav-list">
+        {% if session.get('user_id') %}
+        <li>
+          <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+            📊 <span>Expenses</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('reminders') }}" class="nav-link {% if request.endpoint == 'reminders' %}active{% endif %}">
+            🔔 <span>Reminders</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('chat') }}" class="nav-link {% if request.endpoint == 'chat' %}active{% endif %}">
+            🤖 <span>Ask AI Ledger</span>
+          </a>
+        </li>
+        {% else %}
+        <li>
+          <a href="{{ url_for('login') }}" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">
+            🔑 <span>Sign In</span>
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('register') }}" class="nav-link {% if request.endpoint == 'register' %}active{% endif %}">
+            📝 <span>Sign Up</span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+
+    {% if current_user %}
+    <div class="sidebar-user">
+      <div class="sidebar-user-meta">
+        <div class="sidebar-user-avatar">{{ current_user[0] | upper }}</div>
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 700;">{{ current_user | capitalize }}</div>
+          <span style="font-size: 0.72rem; color: #10b981; font-weight: 600;">● Online</span>
+        </div>
+      </div>
+      <a href="{{ url_for('logout') }}" title="Logout" style="text-decoration: none; color: #ef4444; font-size: 0.85rem; font-weight: 600;">Exit</a>
+    </div>
+    {% endif %}
+  </aside>
+
+  <!-- Right App Main Container -->
+  <div class="app-main">
+    <header class="app-topbar">
+      <div>
+        <input type="text" class="search-input" placeholder="Search transactions, bills...">
+      </div>
+      <div class="topbar-right">
+        {% if session.get('user_id') %}
+        <a href="{{ url_for('export_expenses_csv') }}" style="text-decoration: none; font-size: 0.85rem; color: #0284c7; background: #e0f2fe; padding: 7px 14px; border-radius: 8px; font-weight: 600;">↓ Export CSV</a>
+        {% endif %}
+        <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">Plan: <b style="color: #0f172a;">Pro Demo</b></span>
+      </div>
+    </header>
+
+    <main class="app-content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-msg {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Global Real-time Search Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.querySelector('.search-input');
+      if (!searchInput) return;
+
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase().trim();
+        
+        // Filter transactions, reminders and ledgers
+        const items = document.querySelectorAll('.item-card, .bill-card, .ledger-row:not(.ledger-row--head)');
+        items.forEach(item => {
+          const text = item.innerText.toLowerCase();
+          item.style.display = text.includes(term) ? '' : 'none';
+        });
+
+        // Filter category cards
+        const catCards = document.querySelectorAll('.cat-card');
+        catCards.forEach(card => {
+          const catName = card.querySelector('.cat-name') ? card.querySelector('.cat-name').innerText.toLowerCase() : '';
+          card.style.display = catName.includes(term) ? '' : 'none';
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
