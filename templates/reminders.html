@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+{% block title %}Bill Reminders{% endblock %}
+{% block content %}
+
+<style>
+  .reminders-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1200px;
+  }
+
+  .header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .page-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    margin: 0;
+  }
+  .page-sub {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .panel-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .panel-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .reminder-form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.2fr auto 1fr auto;
+    gap: 14px;
+    align-items: end;
+  }
+
+  @media (max-width: 992px) {
+    .reminder-form-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .reminder-form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .input-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+  }
+  .input-ctrl {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.9rem;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .input-ctrl:focus {
+    border-color: #0284c7;
+  }
+
+  .check-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 42px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+  }
+  .check-wrap input {
+    accent-color: #0284c7;
+    width: 16px;
+    height: 16px;
+  }
+
+  .btn-add {
+    background: #0284c7;
+    color: #ffffff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    height: 42px;
+  }
+  .btn-add:hover { background: #0369a1; }
+
+  .reminders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  .bill-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .bill-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+  }
+
+  .bill-card.is-overdue {
+    border-color: #fecaca;
+    background: #fffafa;
+  }
+
+  .bill-card.is-done {
+    opacity: 0.6;
+    background: #f8fafc;
+  }
+
+  .bill-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .bill-meta-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .bill-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    background: #e0f2fe;
+    color: #0369a1;
+  }
+  .bill-card.is-overdue .bill-icon {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .bill-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+  .bill-note {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  .badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 8px;
+    text-transform: uppercase;
+  }
+  .badge--due { background: #fef3c7; color: #b45309; }
+  .badge--overdue { background: #fee2e2; color: #b91c1c; }
+  .badge--paid { background: #dcfce7; color: #15803d; }
+
+  .bill-card-middle {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 12px;
+  }
+
+  .bill-amount {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .bill-schedule {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  .bill-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-done {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-done:hover { background: #dcfce7; }
+
+  .btn-delete {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.82rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .btn-delete:hover { color: #ef4444; }
+
+  .empty-box {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+  }
+</style>
+
+<div class="reminders-wrapper">
+
+  <div class="header-actions">
+    <div>
+      <h1 class="page-title">Bills & Subscriptions</h1>
+      <p class="page-sub">Track recurring bills and upcoming dues without missing payments.</p>
+    </div>
+  </div>
+
+  <section class="panel-card">
+    <div class="panel-header">
+      <h3>Add New Bill / Payment</h3>
+      <span style="font-size: 0.8rem; color: #64748b;">Schedule alert</span>
+    </div>
+
+    <form method="POST" class="reminder-form-grid">
+      <div class="input-group">
+        <label>Bill Name / Title</label>
+        <input type="text" name="title" class="input-ctrl" placeholder="e.g. Netflix, Electricity, Rent" required>
+      </div>
+
+      <div class="input-group">
+        <label>Amount (₹)</label>
+        <input type="number" step="0.01" min="0" name="amount" class="input-ctrl" placeholder="0.00">
+      </div>
+
+      <div class="input-group">
+        <label>Due Date</label>
+        <input type="date" name="due_date" class="input-ctrl" value="{{ today }}" required>
+      </div>
+
+      <label class="check-wrap">
+        <input type="checkbox" name="is_recurring">
+        <span>Repeats Monthly</span>
+      </label>
+
+      <div class="input-group">
+        <label>Short Note</label>
+        <input type="text" name="note" class="input-ctrl" placeholder="Optional notes">
+      </div>
+
+      <button type="submit" class="btn-add">+ Add Bill</button>
+    </form>
+  </section>
+
+  <section class="panel-card">
+    <div class="panel-header">
+      <h3>Active Subscriptions & Dues</h3>
+      <span style="font-size: 0.82rem; font-weight: 600; color: #0284c7;">{{ reminders | length }} Total Records</span>
+    </div>
+
+    {% if reminders %}
+    <div class="reminders-grid">
+      {% for r in reminders %}
+      <div class="bill-card {{ 'is-done' if r['is_done'] }} {{ 'is-overdue' if (not r['is_done']) and r['due_date'] < today }}">
+        
+        <div class="bill-card-top">
+          <div class="bill-meta-left">
+            <div class="bill-icon">
+              {% if r['is_recurring'] %}🔄{% else %}📅{% endif %}
+            </div>
+            <div>
+              <h4 class="bill-title">{{ r['title'] }}</h4>
+              <div class="bill-note">{{ r['note'] or 'No description' }}</div>
+            </div>
+          </div>
+
+          {% if r['is_done'] %}
+            <span class="badge badge--paid">Paid</span>
+          {% elif r['due_date'] < today %}
+            <span class="badge badge--overdue">Overdue</span>
+          {% else %}
+            <span class="badge badge--due">Due Soon</span>
+          {% endif %}
+        </div>
+
+        <div class="bill-card-middle">
+          <div class="bill-amount">
+            {% if r['amount'] %}₹{{ '%.2f'|format(r['amount']) }}{% else %}—{% endif %}
+          </div>
+          <div class="bill-schedule">
+            Due: {{ r['due_date'] }}
+            {% if r['is_recurring'] %} · <span style="color:#0284c7;">Monthly</span>{% endif %}
+          </div>
+        </div>
+
+        <div class="bill-card-actions">
+          {% if not r['is_done'] %}
+          <form method="POST" action="{{ url_for('complete_reminder', reminder_id=r['id']) }}">
+            <button type="submit" class="btn-done">
+              ✓ {{ 'Pay & Roll 30d' if r['is_recurring'] else 'Mark as Paid' }}
+            </button>
+          </form>
+          {% else %}
+          <span style="font-size: 0.78rem; color: #16a34a; font-weight: 600;">✓ Completed</span>
+          {% endif %}
+
+          <form method="POST" action="{{ url_for('delete_reminder', reminder_id=r['id']) }}">
+            <button type="submit" class="btn-delete">Remove</button>
+          </form>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-box">
+      <div style="font-size: 2rem; margin-bottom: 8px;">📭</div>
+      <p style="margin: 0; font-size: 0.95rem; font-weight: 600; color: #475569;">No upcoming bill reminders</p>
+      <span style="font-size: 0.82rem;">Add your first rent, broadband, or subscription above.</span>
+    </div>
+    {% endif %}
+  </section>
+
+</div>
+
+{% endblock %}
